@@ -61,10 +61,8 @@ export default function Auth() {
         <div className="flex flex-col items-center gap-3">
           <OPITSeal size={72} />
           <div className="text-center">
-            <h1 className="font-serif text-gold text-xl tracking-widest">ส.ต.ล.</h1>
-            <p className="font-sans text-xs text-dim mt-1">
-              สำนักงานตรวจสอบสิ่งลี้ลับแห่งประเทศไทย
-            </p>
+            <h1 className="font-serif text-gold text-lg leading-snug">สำนักงานตรวจสอบสิ่งลี้ลับ</h1>
+            <p className="font-sans text-xs text-dim mt-0.5">แห่งประเทศไทย · OPIT</p>
             <p className="font-sans text-[10px] text-dim/50">Field Scanner · v1.0</p>
           </div>
         </div>

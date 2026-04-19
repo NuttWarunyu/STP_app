@@ -256,6 +256,7 @@ export default function Scanner({ profile, onProfileUpdate }) {
           onRetry={detectLocation}
           onNext={() => setStep('capture')}
           profile={profile}
+
         />
       )}
 
@@ -307,154 +308,190 @@ export default function Scanner({ profile, onProfileUpdate }) {
   )
 }
 
-function ProbabilityBar({ prob }) {
+function GaugeChart({ prob }) {
   const pct = Math.round(prob * 100)
-  const barColor = pct >= 60 ? 'bg-blood/70' : pct >= 40 ? 'bg-gold/60' : 'bg-green-700/60'
-  const textColor = pct >= 60 ? 'text-red-400/80' : pct >= 40 ? 'text-gold/80' : 'text-green-400/70'
-  const label = pct >= 60 ? 'สูง' : pct >= 40 ? 'ปานกลาง' : 'ต่ำ'
+
+  function pt(p, r = 74) {
+    const a = (180 - p * 1.8) * Math.PI / 180
+    return [+(100 + r * Math.cos(a)).toFixed(1), +(100 - r * Math.sin(a)).toFixed(1)]
+  }
+
+  function arc(p1, p2, r = 74) {
+    const [x1, y1] = pt(p1, r)
+    const [x2, y2] = pt(p2, r)
+    if (Math.abs(x2 - x1) < 0.1 && Math.abs(y2 - y1) < 0.1) return ''
+    const large = (p2 - p1) > 50 ? 1 : 0
+    return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 0 ${x2} ${y2}`
+  }
+
+  const fillColor = pct >= 60 ? '#8b1a1a' : pct >= 40 ? '#c9a84c' : '#4ade80'
+  const labelTh = pct >= 60 ? 'เสี่ยงสูง' : pct >= 40 ? 'ปานกลาง' : 'ปลอดภัย'
+  const needleAngle = pct * 1.8 - 90
 
   return (
-    <div className="rounded-card bg-white/[0.04] border border-gold/[0.1] p-3.5 space-y-2">
-      <div className="flex justify-between font-sans text-[12px]">
-        <span className="text-dim/50 tracking-widest uppercase">โอกาสพบสิ่งลี้ลับ</span>
-        <span className={textColor}>{label} {pct}%</span>
-      </div>
-      <div className="h-px bg-dim/10">
-        <div className={`h-px transition-all duration-700 ${barColor}`} style={{ width: `${pct}%` }} />
-      </div>
+    <div className="rounded-card bg-white/[0.04] border border-gold/[0.1] py-3 px-2">
+      <p className="font-sans text-[11px] text-dim/40 tracking-widest uppercase text-center mb-1">โอกาสพบสิ่งลี้ลับ</p>
+      <svg viewBox="0 0 200 108" className="w-full max-w-[260px] mx-auto block">
+        {/* Background track */}
+        <path d={arc(0, 100)} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="14" />
+        {/* Zone arcs */}
+        <path d={arc(0, 40)}   fill="none" stroke="#4ade80" strokeWidth="14" strokeLinecap="butt" opacity="0.22" />
+        <path d={arc(40, 60)}  fill="none" stroke="#c9a84c" strokeWidth="14" strokeLinecap="butt" opacity="0.22" />
+        <path d={arc(60, 100)} fill="none" stroke="#8b1a1a" strokeWidth="14" strokeLinecap="butt" opacity="0.22" />
+        {/* Fill arc */}
+        {pct > 0 && (
+          <path d={arc(0, Math.min(pct, 99))} fill="none" stroke={fillColor} strokeWidth="14" strokeLinecap="round" opacity="0.9" />
+        )}
+        {/* Needle */}
+        <g transform={`rotate(${needleAngle}, 100, 100)`}>
+          <line x1="100" y1="100" x2="100" y2="30" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.85" />
+        </g>
+        {/* Pivot cap */}
+        <circle cx="100" cy="100" r="5" fill="#c9a84c" opacity="0.75" />
+        {/* Center text */}
+        <text x="100" y="76" textAnchor="middle" fill="white" fontSize="28" fontWeight="bold" fontFamily="serif" opacity="0.9">{pct}%</text>
+        <text x="100" y="91" textAnchor="middle" fill="white" fontSize="8" fontFamily="sans-serif" opacity="0.4" letterSpacing="2">{labelTh.toUpperCase()}</text>
+        {/* Zone labels */}
+        <text x="26" y="107" textAnchor="middle" fill="#4ade80" fontSize="7" fontFamily="sans-serif" opacity="0.5">ต่ำ</text>
+        <text x="100" y="24" textAnchor="middle" fill="#c9a84c" fontSize="7" fontFamily="sans-serif" opacity="0.5">กลาง</text>
+        <text x="174" y="107" textAnchor="middle" fill="#8b1a1a" fontSize="7" fontFamily="sans-serif" opacity="0.6">สูง</text>
+      </svg>
     </div>
   )
 }
 
-function LocationStep({ location, geocode, nearbyPlaces, weather, detectionProb, loading, error, isRoyalZone, scansToday, dailyLimit, canScan, onRetry, onNext }) {
+function LocationStep({ location, geocode, nearbyPlaces, weather, detectionProb, loading, error, isRoyalZone, scansToday, dailyLimit, canScan, onRetry, onNext, profile }) {
+  const yearBE = new Date().getFullYear() + 543
+
   if (isRoyalZone) {
     return (
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="rounded-card bg-white/[0.04] border border-gold/[0.15] p-6 text-center space-y-3 max-w-xs w-full">
-          <p className="font-sans text-[12px] text-gold/40 tracking-widest uppercase">เขตหวงห้าม</p>
-          <p className="font-serif text-gold text-sm leading-relaxed">
-            พื้นที่นี้อยู่ภายใต้การคุ้มครองพิเศษ
-          </p>
+          <p className="font-sans text-[11px] text-gold/40 tracking-widest uppercase">เขตหวงห้าม</p>
+          <p className="font-serif text-gold text-sm leading-relaxed">พื้นที่นี้อยู่ภายใต้การคุ้มครองพิเศษ</p>
           <p className="font-sans text-xs text-dim/55 leading-relaxed">
-            ส.ต.ล. ไม่ดำเนินการตรวจสอบในบริเวณดังกล่าว
+            สำนักงานตรวจสอบสิ่งลี้ลับไม่ดำเนินการในบริเวณดังกล่าว
           </p>
         </div>
       </div>
     )
   }
 
+  const RISK_ORDER = { high: 0, medium: 1, low: 2 }
+  const topPlaces = [...nearbyPlaces]
+    .sort((a, b) => RISK_ORDER[a.risk] - RISK_ORDER[b.risk] || a.distanceKm - b.distanceKm)
+    .filter((p, _, arr) => {
+      const hasHighMed = arr.some(x => x.risk === 'high' || x.risk === 'medium')
+      return hasHighMed ? p.risk !== 'low' : true
+    })
+    .slice(0, 3)
+
   return (
     <div className="flex-1 overflow-y-auto pt-3 pb-4 px-3 space-y-2.5">
-      {/* Quota warning */}
-      {!canScan && (
-        <div className="rounded-card border border-blood/[0.25] bg-blood/[0.06] p-3">
-          <p className="font-sans text-xs text-red-400/75">
-            ใช้ครบโควตาประจำวัน ({dailyLimit} ครั้ง) — กรุณารอวันพรุ่งนี้
-          </p>
-        </div>
-      )}
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { label: 'รายงาน', value: profile?.total_detections || 0 },
+          { label: 'จังหวัด', value: (profile?.unique_provinces || []).length },
+          { label: 'ชนิดผี', value: (profile?.unique_classes || []).length },
+        ].map(({ label, value }) => (
+          <div key={label} className="rounded-card bg-white/[0.04] border border-gold/[0.1] py-2.5 text-center">
+            <p className="font-serif text-gold text-xl leading-none">{value}</p>
+            <p className="font-sans text-[11px] text-dim/45 mt-1">{label}</p>
+          </div>
+        ))}
+      </div>
 
-      {canScan && dailyLimit !== Infinity && (
-        <p className="font-sans text-[12px] text-dim/35 text-right tracking-wider">
-          เหลือ {dailyLimit - scansToday} การสแกนวันนี้
-        </p>
-      )}
-
-      {/* Detection probability */}
-      {location && !loading && <ProbabilityBar prob={detectionProb} />}
+      {/* Gauge hero */}
+      <GaugeChart prob={loading ? 0.35 : detectionProb} />
 
       {/* Weather notice */}
       {weather.isRainy && (
-        <div className="rounded-card border border-blue-800/[0.2] bg-blue-900/[0.06] px-3 py-2 flex items-center gap-2">
+        <div className="rounded-card border border-blue-800/[0.2] bg-blue-900/[0.05] px-3 py-2 flex items-center gap-2">
           <span className="text-sm">🌧</span>
-          <span className="font-sans text-[12px] text-blue-400/60">
-            ตรวจพบสภาพอากาศฝนตก — โอกาสพบผีน้ำและเร่ร่อนเพิ่มขึ้น
-          </span>
+          <span className="font-sans text-[11px] text-blue-400/60">ฝนตก — โอกาสพบผีน้ำและเร่ร่อนเพิ่มขึ้น</span>
         </div>
       )}
 
       {/* Location card */}
-      <div className="rounded-card bg-white/[0.04] border border-gold/[0.12] p-4 space-y-2.5">
-        <p className="font-sans text-[12px] text-dim/45 tracking-widest uppercase">ตำแหน่งปัจจุบัน</p>
-
-        {loading && (
-          <div className="flex items-center gap-2.5 py-1">
-            <div className="w-3 h-3 border border-gold/30 border-t-gold animate-spin rounded-full shrink-0" />
-            <span className="font-sans text-xs text-dim/60">กำลังระบุตำแหน่ง...</span>
-          </div>
-        )}
-
-        {error && (
-          <div className="space-y-2">
-            <p className="font-sans text-xs text-red-400/65">{error}</p>
-            <button
-              onClick={onRetry}
-              className="font-sans text-[12px] text-gold/55 border border-gold/[0.2] rounded-sm px-3 py-1 hover:border-gold/35 transition-colors"
-            >
-              ลองอีกครั้ง
-            </button>
-          </div>
-        )}
-
-        {location && !loading && (
-          <div className="space-y-0.5">
-            <p className="font-sans text-sm text-parchment/85">
-              {geocode?.locality || 'ไม่ทราบสถานที่'}
-            </p>
-            {geocode?.province && (
-              <p className="font-sans text-xs text-dim/60">{geocode.province}</p>
+      <div className="rounded-card bg-white/[0.04] border border-gold/[0.12] p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 space-y-0.5">
+            <p className="font-sans text-[11px] text-dim/40 tracking-widest uppercase">ตำแหน่งปัจจุบัน</p>
+            {loading && (
+              <div className="flex items-center gap-2 py-1">
+                <div className="w-3 h-3 border border-gold/30 border-t-gold animate-spin rounded-full shrink-0" />
+                <span className="font-sans text-xs text-dim/55">กำลังระบุตำแหน่ง...</span>
+              </div>
             )}
-            <p className="font-mono text-[11px] text-dim/30 tracking-wider mt-1">
-              {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
-            </p>
+            {error && (
+              <div className="space-y-1.5 pt-1">
+                <p className="font-sans text-xs text-red-400/65">{error}</p>
+                <button onClick={onRetry} className="font-sans text-[11px] text-gold/55 border border-gold/[0.2] rounded-sm px-3 py-1">
+                  ลองอีกครั้ง
+                </button>
+              </div>
+            )}
+            {location && !loading && (
+              <>
+                <p className="font-sans text-sm text-parchment/85 pt-0.5">{geocode?.locality || 'ไม่ทราบสถานที่'}</p>
+                {geocode?.province && <p className="font-sans text-xs text-dim/55">{geocode.province}</p>}
+                <p className="font-mono text-[11px] text-dim/28 tracking-wider pt-0.5">
+                  {location.lat.toFixed(5)}, {location.lng.toFixed(5)}
+                </p>
+              </>
+            )}
           </div>
-        )}
+          {location && !loading && (
+            <div className="w-2.5 h-2.5 rounded-full bg-gold/60 animate-pulse shrink-0 mt-1" />
+          )}
+        </div>
       </div>
 
-      {/* Nearby places — top 3 by risk priority */}
-      {nearbyPlaces.length > 0 && (() => {
-        const RISK_ORDER = { high: 0, medium: 1, low: 2 }
-        const topPlaces = [...nearbyPlaces]
-          .sort((a, b) => RISK_ORDER[a.risk] - RISK_ORDER[b.risk] || a.distanceKm - b.distanceKm)
-          .filter((p, i, arr) => {
-            const hasHighMed = arr.some(x => x.risk === 'high' || x.risk === 'medium')
-            return hasHighMed ? p.risk !== 'low' : true
-          })
-          .slice(0, 3)
-        return (
+      {/* Nearby places */}
+      {topPlaces.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="font-sans text-[11px] text-dim/40 tracking-widest uppercase px-0.5">สถานที่ใกล้เคียง</p>
           <div className="space-y-1.5">
-            <p className="font-sans text-[12px] text-dim/45 tracking-widest uppercase px-0.5">
-              สถานที่ใกล้เคียง
-            </p>
-            <div className="space-y-1.5">
-              {topPlaces.map((place, i) => (
-                <div
-                  key={i}
-                  className="rounded-card bg-white/[0.03] border border-dim/[0.1] flex items-center justify-between px-3 py-2.5 gap-3"
-                >
-                  <div className="min-w-0">
-                    <p className="font-sans text-xs text-parchment/75 truncate">{place.name}</p>
-                    <p className="font-sans text-[12px] text-dim/45">
-                      {place.typeLabel} · {place.distance}
-                    </p>
-                  </div>
-                  <span className={`font-sans text-[11px] border px-1.5 py-0.5 rounded-sm shrink-0 ${RISK_STYLES[place.risk]}`}>
-                    {place.riskLabel}
-                  </span>
+            {topPlaces.map((place, i) => (
+              <div key={i} className="rounded-card bg-white/[0.03] border border-dim/[0.1] flex items-center justify-between px-3 py-2.5 gap-3">
+                <div className="min-w-0">
+                  <p className="font-sans text-xs text-parchment/75 truncate">{place.name}</p>
+                  <p className="font-sans text-[11px] text-dim/45">{place.typeLabel} · {place.distance}</p>
                 </div>
-              ))}
-            </div>
+                <span className={`font-sans text-[11px] border px-1.5 py-0.5 rounded-sm shrink-0 ${RISK_STYLES[place.risk]}`}>
+                  {place.riskLabel}
+                </span>
+              </div>
+            ))}
           </div>
-        )
-      })()}
+        </div>
+      )}
 
-      <button
-        disabled={!location || loading || !canScan}
-        onClick={onNext}
-        className="w-full rounded-card border border-gold/[0.4] text-gold font-sans text-sm py-3 hover:bg-gold/[0.07] transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
-      >
-        ดำเนินการต่อ →
-      </button>
+      {/* Alert bar */}
+      {!canScan ? (
+        <div className="rounded-card border border-blood/[0.3] bg-blood/[0.06] px-3 py-2.5">
+          <p className="font-sans text-xs text-red-400/75">ใช้ครบโควตาประจำวัน ({dailyLimit} ครั้ง) — กรุณารอวันพรุ่งนี้</p>
+        </div>
+      ) : dailyLimit !== Infinity ? (
+        <div className="rounded-card border border-gold/[0.2] bg-gold/[0.03] px-3 py-2.5">
+          <p className="font-sans text-xs text-gold/60">เหลือ {dailyLimit - scansToday} การสแกนวันนี้</p>
+        </div>
+      ) : null}
+
+      {/* CTA */}
+      <div className="space-y-1.5 pb-1">
+        <button
+          disabled={!location || loading || !canScan}
+          onClick={onNext}
+          className="w-full rounded-card bg-blood/75 border border-blood/60 text-parchment/90 font-sans text-sm py-3.5 hover:bg-blood/90 transition-colors disabled:opacity-25 disabled:cursor-not-allowed tracking-wide"
+        >
+          เริ่มการสแกน →
+        </button>
+        <p className="font-sans text-[11px] text-dim/30 text-center tracking-wider">
+          ระบบพร้อมปฏิบัติการ · STL-{yearBE}
+        </p>
+      </div>
     </div>
   )
 }
@@ -576,8 +613,8 @@ function OPITSealAnimated() {
     <svg width="80" height="80" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
       <circle cx="50" cy="50" r="46" fill="none" stroke="#c9a84c" strokeWidth="1.5" opacity="0.35" />
       <circle cx="50" cy="50" r="38" fill="none" stroke="#c9a84c" strokeWidth="1" opacity="0.25" />
-      <text x="50" y="45" textAnchor="middle" fill="#c9a84c" fontSize="14" fontFamily="serif" fontWeight="bold" opacity="0.75">
-        ส.ต.ล.
+      <text x="50" y="45" textAnchor="middle" fill="#c9a84c" fontSize="8" fontFamily="serif" fontWeight="bold" opacity="0.75">
+        สตล.
       </text>
       <text x="50" y="60" textAnchor="middle" fill="#c9a84c" fontSize="6" fontFamily="serif" opacity="0.55">
         OPIT

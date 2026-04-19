@@ -126,6 +126,10 @@ export default function App() {
             <IconFeed active={activeTab === 'feed'} />
           </NavBtn>
 
+          <NavBtn id="passport" active={activeTab === 'passport'} label="แฟ้มสะสม" onPress={setActiveTab}>
+            <IconPassport active={activeTab === 'passport'} />
+          </NavBtn>
+
           {/* Scan — raised center button */}
           <button
             onClick={() => setActiveTab('scan')}
@@ -142,10 +146,6 @@ export default function App() {
               activeTab === 'scan' ? 'text-gold' : 'text-dim/40'
             }`}>สแกน</span>
           </button>
-
-          <NavBtn id="passport" active={activeTab === 'passport'} label="แฟ้ม" onPress={setActiveTab}>
-            <IconPassport active={activeTab === 'passport'} />
-          </NavBtn>
 
           <NavBtn id="profile" active={activeTab === 'profile'} label="โปรไฟล์" onPress={setActiveTab}>
             <IconProfile active={activeTab === 'profile'} />

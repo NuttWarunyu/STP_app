@@ -45,8 +45,8 @@ export default function ReportCard({ report, profile, onSave, onRetry }) {
           <div className="flex items-center gap-2">
             <OPITSeal size={26} />
             <div>
-              <p className="font-serif text-gold text-xs tracking-widest leading-none">ส.ต.ล.</p>
-              <p className="font-sans text-dim/35 text-[11px] tracking-wider leading-none mt-0.5">OPIT</p>
+              <p className="font-serif text-gold text-[11px] leading-tight">สำนักงานตรวจสอบสิ่งลี้ลับ</p>
+              <p className="font-sans text-dim/35 text-[10px] tracking-wider mt-0.5">OPIT</p>
             </div>
           </div>
           <div className="text-right">
