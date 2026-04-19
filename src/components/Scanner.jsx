@@ -3,7 +3,7 @@ import { normalizeImage } from '../lib/imageUtils'
 import Header from './Header'
 import ReportCard from './ReportCard'
 import ScanResult from './ScanResult'
-import { analyzeImage } from '../lib/claude'
+import { analyzeImage, generateIncidentReport } from '../lib/claude'
 import { generateGhostOverlay } from '../lib/openai'
 import { getNearbyPlaces, reverseGeocode } from '../lib/gmaps'
 import { isInRoyalZone } from '../constants/geofences'
@@ -45,6 +45,8 @@ export default function Scanner({ profile, onProfileUpdate }) {
   const [scansToday, setScansToday] = useState(0)
   const [error, setError] = useState(null)
   const [converting, setConverting] = useState(false)
+  const [incidentReport, setIncidentReport] = useState(null)
+  const [loadingIncident, setLoadingIncident] = useState(false)
   const fileInputRef = useRef(null)
   const cameraInputRef = useRef(null)
 
@@ -91,6 +93,12 @@ export default function Scanner({ profile, onProfileUpdate }) {
             rankLevel: profile?.rank_level || 1,
           })
         )
+        setLoadingIncident(true)
+        generateIncidentReport({
+          locationName: geo?.locality || 'ไม่ทราบ',
+          province: geo?.province || 'ไม่ทราบ',
+          nearbyPlaces: places,
+        }).then(setIncidentReport).catch(() => {}).finally(() => setLoadingIncident(false))
       }
     } catch (e) {
       setLocationError('ไม่สามารถระบุตำแหน่งได้ กรุณาอนุญาตการเข้าถึงตำแหน่ง')
@@ -256,7 +264,8 @@ export default function Scanner({ profile, onProfileUpdate }) {
           onRetry={detectLocation}
           onNext={() => setStep('capture')}
           profile={profile}
-
+          incidentReport={incidentReport}
+          loadingIncident={loadingIncident}
         />
       )}
 
@@ -373,7 +382,38 @@ function GaugeChart({ prob }) {
   )
 }
 
-function LocationStep({ location, geocode, nearbyPlaces, weather, detectionProb, loading, error, isRoyalZone, scansToday, dailyLimit, canScan, onRetry, onNext, profile }) {
+function IncidentCard({ report, loading }) {
+  if (loading) {
+    return (
+      <div className="rounded-sm border border-red-900/30 bg-red-950/10 px-3 py-2.5 space-y-1.5">
+        <p className="font-mono text-[11px] text-red-400/40 tracking-widest">░░ บันทึกเหตุการณ์ · ปิดลับ ░░</p>
+        <div className="space-y-1.5 py-1">
+          <div className="h-2.5 w-4/5 bg-white/[0.04] rounded animate-pulse" />
+          <div className="h-2.5 w-3/5 bg-white/[0.04] rounded animate-pulse" />
+        </div>
+      </div>
+    )
+  }
+  if (!report) return null
+  return (
+    <div className="rounded-sm border border-red-900/35 bg-red-950/[0.08]">
+      <div className="px-3 pt-2.5 pb-1 border-b border-red-900/20">
+        <p className="font-mono text-[11px] text-red-400/50 tracking-widest">░░ บันทึกเหตุการณ์ · ปิดลับ ░░</p>
+      </div>
+      <div className="px-3 pt-2 pb-2.5 space-y-1.5">
+        <p className="font-mono text-[10px] text-dim/30 tracking-widest">{report.case_ref}</p>
+        {(report.entries || []).map((entry, i) => (
+          <p key={i} className="font-mono text-[12px] leading-relaxed" style={{ color: '#d4c4a8', opacity: 0.75 }}>
+            · {entry}
+          </p>
+        ))}
+        <p className="font-mono text-[10px] pt-1" style={{ color: '#3a2a18' }}>* เนื้อหาสมมติเพื่อความบันเทิง</p>
+      </div>
+    </div>
+  )
+}
+
+function LocationStep({ location, geocode, nearbyPlaces, weather, detectionProb, loading, error, isRoyalZone, scansToday, dailyLimit, canScan, onRetry, onNext, profile, incidentReport, loadingIncident }) {
   const yearBE = new Date().getFullYear() + 543
 
   if (isRoyalZone) {
@@ -417,6 +457,11 @@ function LocationStep({ location, geocode, nearbyPlaces, weather, detectionProb,
 
       {/* Gauge hero */}
       <GaugeChart prob={loading ? 0.35 : detectionProb} />
+
+      {/* Incident report */}
+      {(loadingIncident || incidentReport) && (
+        <IncidentCard report={incidentReport} loading={loadingIncident} />
+      )}
 
       {/* Weather notice */}
       {weather.isRainy && (

@@ -65,6 +65,39 @@ Visual adjustment rules (apply to base ${pct}%):
 - Never exceed 85% total probability`
 }
 
+export async function generateIncidentReport({ locationName, province, nearbyPlaces = [] }) {
+  const nearbyStr = nearbyPlaces.slice(0, 3).map(p => p.name).join(', ') || 'ไม่ทราบ'
+  const year = new Date().getFullYear() + 543
+  const body = JSON.stringify({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 400,
+    system: `คุณคือระบบสร้างเอกสารสมมติสำหรับเกมสืบสวนเหนือธรรมชาติ สร้างรายงานเหตุการณ์ลับ (fictional) ในพื้นที่ที่กำหนด ตอบด้วย JSON เท่านั้น ภาษาไทย ห้ามอ้างอิงบุคคล/สถานที่จริง`,
+    messages: [{
+      role: 'user',
+      content: `สร้างรายงานเหตุการณ์ปิดลับสมมติ (fictional) ของพื้นที่: ${locationName}, ${province}
+สถานที่ใกล้เคียง: ${nearbyStr}
+
+ตอบด้วย JSON:
+{
+  "case_ref": string (รหัสคดีสมมติ เช่น "คด.ผผ-${year}/0█42"),
+  "entries": array of 2 strings (เหตุการณ์สมมติที่ทำให้รู้สึกหลอนหรือลึกลับ เช่น การพบศพ อุบัติเหตุประหลาด การหายตัว สัตว์แปลก แต่ละรายการสั้น 1 ประโยค เป็นสำนวนรายงานราชการ)
+}`,
+    }],
+  })
+
+  const res = await fetch('/api/anthropic/v1/messages', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body,
+  })
+  if (!res.ok) throw new Error('Incident report generation failed')
+  const data = await res.json()
+  const text = data.content[0].text.trim()
+  const match = text.match(/\{[\s\S]*\}/)
+  if (!match) throw new Error('Invalid JSON')
+  return JSON.parse(match[0])
+}
+
 export async function analyzeImage({ base64Image, locationName, province, nearbyPlaces, time, isNight, detectionProb = 0.35 }) {
 
   const compressed = await compressImage(base64Image)
