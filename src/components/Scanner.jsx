@@ -48,6 +48,7 @@ export default function Scanner({ profile, onProfileUpdate }) {
   const [incidentReport, setIncidentReport] = useState(null)
   const [loadingIncident, setLoadingIncident] = useState(false)
   const [incidentDismissed, setIncidentDismissed] = useState(false)
+  const [alertReady, setAlertReady] = useState(false)
   const fileInputRef = useRef(null)
   const cameraInputRef = useRef(null)
 
@@ -94,7 +95,9 @@ export default function Scanner({ profile, onProfileUpdate }) {
             rankLevel: profile?.rank_level || 1,
           })
         )
+        setAlertReady(false)
         setLoadingIncident(true)
+        setTimeout(() => setAlertReady(true), 2000)
         generateIncidentReport({
           locationName: geo?.locality || 'ไม่ทราบ',
           province: geo?.province || 'ไม่ทราบ',
@@ -249,7 +252,7 @@ export default function Scanner({ profile, onProfileUpdate }) {
   return (
     <div className="flex flex-col h-full">
       {step !== 'report' && <Header title="สแกนภาคสนาม" rankLevel={profile?.rank_level || 1} />}
-      {step === 'location' && !incidentDismissed && (loadingIncident || incidentReport) && (
+      {step === 'location' && !incidentDismissed && alertReady && (loadingIncident || incidentReport) && (
         <EmergencyAlert
           report={incidentReport}
           loading={loadingIncident}

@@ -76,6 +76,7 @@ function selectGhostPool(nearbyTypes, weather, hour) {
   const scored = candidates.map((g) => {
     let w = RARITY[g.rarity]?.weight ?? 20
     const cond = g.spawnConditions || {}
+    if (g.class === 'เร่ร่อน') w += 35
     if (nearbyTypes.hasWater && g.class === 'น้ำ') w += 20
     if (nearbyTypes.hasCemetery && ['อาคม', 'นรก'].includes(g.class)) w += 15
     if (nearbyTypes.hasForest && g.class === 'ป่า') w += 20
