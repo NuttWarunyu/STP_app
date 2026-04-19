@@ -319,19 +319,19 @@ function GaugeChart({ prob }) {
     return [+(100 + r * Math.cos(rad)).toFixed(2), +(100 - r * Math.sin(rad)).toFixed(2)]
   }
 
-  // Draw arc from p1% to p2% — always small arc (max span = 180°, never needs large-arc=1)
+  // sweep=1 (CW in screen) draws the upper arc; sweep=0 draws the lower arc (wrong)
   function arc(p1, p2, r = 74) {
     const [x1, y1] = pt(p1, r)
     const [x2, y2] = pt(p2, r)
-    return `M ${x1} ${y1} A ${r} ${r} 0 0 0 ${x2} ${y2}`
+    return `M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}`
   }
 
   // Full semicircle split into two 90° arcs to avoid SVG degenerate case
   function fullArc(r = 74) {
-    const [lx, ly] = pt(0, r)    // left
-    const [tx, ty] = pt(50, r)   // top
-    const [rx, ry] = pt(100, r)  // right
-    return `M ${lx} ${ly} A ${r} ${r} 0 0 0 ${tx} ${ty} A ${r} ${r} 0 0 0 ${rx} ${ry}`
+    const [lx, ly] = pt(0, r)
+    const [tx, ty] = pt(50, r)
+    const [rx, ry] = pt(100, r)
+    return `M ${lx} ${ly} A ${r} ${r} 0 0 1 ${tx} ${ty} A ${r} ${r} 0 0 1 ${rx} ${ry}`
   }
 
   const fillColor = pct >= 60 ? '#8b1a1a' : pct >= 40 ? '#c9a84c' : '#4ade80'
