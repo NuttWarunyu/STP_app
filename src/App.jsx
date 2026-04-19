@@ -154,7 +154,7 @@ export default function App() {
             }`}>
               <IconScan />
             </div>
-            <span className={`font-sans text-[10px] tracking-wide transition-colors ${
+            <span className={`font-sans text-[13px] tracking-wide transition-colors ${
               activeTab === 'scan' ? 'text-gold' : 'text-dim/40'
             }`}>สแกน</span>
           </button>
@@ -177,7 +177,7 @@ function NavBtn({ id, active, label, onPress, children }) {
       }`}
     >
       {children}
-      <span className="font-sans text-[10px] tracking-wide">{label}</span>
+      <span className="font-sans text-[13px] tracking-wide">{label}</span>
     </button>
   )
 }

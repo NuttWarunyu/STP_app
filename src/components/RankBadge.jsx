@@ -26,7 +26,7 @@ export default function RankBadge({ level = 1, compact = false }) {
 
   return (
     <div className={`font-sans text-xs border px-2 py-1 inline-block ${colors}`}>
-      <div className="text-[12px] tracking-widest opacity-60">ยศ · RANK</div>
+      <div className="text-[15px] tracking-widest opacity-60">ยศ · RANK</div>
       <div className="font-medium">{rank.nameTh}</div>
     </div>
   )

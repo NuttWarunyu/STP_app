@@ -45,13 +45,13 @@ export default function ReportCard({ report, profile, onSave, onRetry }) {
           <div className="flex items-center gap-2">
             <OPITSeal size={26} />
             <div>
-              <p className="font-serif text-gold text-[11px] leading-tight">สำนักงานตรวจสอบสิ่งลี้ลับ</p>
-              <p className="font-sans text-dim/35 text-[10px] tracking-wider mt-0.5">OPIT</p>
+              <p className="font-serif text-gold text-[14px] leading-tight">สำนักงานตรวจสอบสิ่งลี้ลับ</p>
+              <p className="font-sans text-dim/35 text-[13px] tracking-wider mt-0.5">OPIT</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="font-mono text-[12px] text-dim/60 tracking-wider">{report.report_number}</p>
-            <p className="font-sans text-[11px] text-dim/35">{formatThaiDate(report.created_at)}</p>
+            <p className="font-mono text-[15px] text-dim/60 tracking-wider">{report.report_number}</p>
+            <p className="font-sans text-[14px] text-dim/35">{formatThaiDate(report.created_at)}</p>
           </div>
         </div>
 
@@ -71,10 +71,10 @@ export default function ReportCard({ report, profile, onSave, onRetry }) {
                 <div>
                   <p className="font-serif text-gold text-xl leading-tight">{nameTh}</p>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <span className={`font-sans text-[12px] border px-1.5 py-0.5 rounded-sm ${rarityInfo.color}`}>
+                    <span className={`font-sans text-[15px] border px-1.5 py-0.5 rounded-sm ${rarityInfo.color}`}>
                       {rarityInfo.label}
                     </span>
-                    <span className="font-sans text-[12px] border border-dim/30 px-1.5 py-0.5 rounded-sm text-dim/55">
+                    <span className="font-sans text-[15px] border border-dim/30 px-1.5 py-0.5 rounded-sm text-dim/55">
                       {report.ghost_class}
                     </span>
                   </div>
@@ -99,15 +99,15 @@ export default function ReportCard({ report, profile, onSave, onRetry }) {
           </div>
 
           {report.claude_reason && (
-            <p className="font-sans text-[12px] text-parchment/45 italic leading-relaxed border-t border-dim/10 pt-2.5">
+            <p className="font-sans text-[15px] text-parchment/45 italic leading-relaxed border-t border-dim/10 pt-2.5">
               "{report.claude_reason}"
             </p>
           )}
 
           {ghostData?.fieldNote && (
             <div className="rounded-card border border-dim/[0.12] bg-white/[0.02] p-3">
-              <p className="font-sans text-[12px] text-dim/45 tracking-widest uppercase mb-1.5">บันทึกสนาม</p>
-              <p className="font-sans text-[12px] text-parchment/45 leading-relaxed whitespace-pre-line">
+              <p className="font-sans text-[15px] text-dim/45 tracking-widest uppercase mb-1.5">บันทึกสนาม</p>
+              <p className="font-sans text-[15px] text-parchment/45 leading-relaxed whitespace-pre-line">
                 {ghostData.fieldNote}
               </p>
             </div>
@@ -115,17 +115,17 @@ export default function ReportCard({ report, profile, onSave, onRetry }) {
 
           {coexistTip && (
             <div className="rounded-card border border-gold/[0.12] bg-gold/[0.03] p-3">
-              <p className="font-sans text-[12px] text-gold/45 tracking-widest uppercase mb-1.5">คำแนะนำ</p>
-              <p className="font-sans text-[12px] text-parchment/45 leading-relaxed">{coexistTip}</p>
+              <p className="font-sans text-[15px] text-gold/45 tracking-widest uppercase mb-1.5">คำแนะนำ</p>
+              <p className="font-sans text-[15px] text-parchment/45 leading-relaxed">{coexistTip}</p>
             </div>
           )}
 
           <div className="flex items-center justify-between border-t border-dim/[0.08] pt-2">
-            <span className="font-sans text-[11px] text-dim/20 tracking-widest">
+            <span className="font-sans text-[14px] text-dim/20 tracking-widest">
               สำนักงานตรวจสอบสิ่งลี้ลับแห่งประเทศไทย
             </span>
             {report.lat && (
-              <span className="font-mono text-[11px] text-dim/20">
+              <span className="font-mono text-[14px] text-dim/20">
                 {Number(report.lat).toFixed(4)}, {Number(report.lng).toFixed(4)}
               </span>
             )}
@@ -161,7 +161,7 @@ export default function ReportCard({ report, profile, onSave, onRetry }) {
 function InfoRow({ label, value }) {
   return (
     <div>
-      <span className="font-sans text-[12px] text-dim/40 tracking-widest uppercase block">{label}</span>
+      <span className="font-sans text-[15px] text-dim/40 tracking-widest uppercase block">{label}</span>
       <span className="font-sans text-xs text-parchment/65">{value}</span>
     </div>
   )

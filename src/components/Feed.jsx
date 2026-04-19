@@ -41,7 +41,7 @@ export default function Feed({ profile }) {
 
       {refreshing && (
         <div className="text-center py-2">
-          <span className="font-sans text-[12px] text-gold/50 tracking-widest">กำลังโหลด...</span>
+          <span className="font-sans text-[15px] text-gold/50 tracking-widest">กำลังโหลด...</span>
         </div>
       )}
 

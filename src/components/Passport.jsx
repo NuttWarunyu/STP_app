@@ -41,7 +41,7 @@ export default function Passport({ profile }) {
         {/* Collection status */}
         <div className="rounded-card bg-white/[0.04] border border-gold/[0.12] p-4 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="font-sans text-[12px] text-dim/50 tracking-widest uppercase">สถานะการสะสม</span>
+            <span className="font-sans text-[15px] text-dim/50 tracking-widest uppercase">สถานะการสะสม</span>
             <span className="font-serif text-gold text-sm">
               {collected}/{total} ชนิด
             </span>
@@ -52,7 +52,7 @@ export default function Passport({ profile }) {
               style={{ width: `${(collected / total) * 100}%` }}
             />
           </div>
-          <p className="font-sans text-[12px] text-dim/35">
+          <p className="font-sans text-[15px] text-dim/35">
             {total - collected > 0
               ? `ยังไม่พบ ${total - collected} ชนิด`
               : 'สะสมครบทุกชนิดแล้ว'}
@@ -80,7 +80,7 @@ export default function Passport({ profile }) {
 
             {specialClasses.length > 0 && (
               <div className="space-y-2">
-                <p className="font-sans text-[12px] text-dim/50 tracking-widest uppercase px-0.5">ชนิดพิเศษ</p>
+                <p className="font-sans text-[15px] text-dim/50 tracking-widest uppercase px-0.5">ชนิดพิเศษ</p>
                 <div className="grid grid-cols-3 gap-2">
                   {specialClasses.map((ghostClass) => (
                     <GhostSlot

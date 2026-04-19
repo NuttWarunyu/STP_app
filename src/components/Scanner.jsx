@@ -391,7 +391,7 @@ function GaugeChart({ prob }) {
 
   return (
     <div className="rounded-card bg-white/[0.04] border border-gold/[0.1] py-3 px-2">
-      <p className="font-sans text-[11px] text-dim/40 tracking-widest uppercase text-center mb-1">โอกาสพบสิ่งลี้ลับ</p>
+      <p className="font-sans text-[14px] text-dim/40 tracking-widest uppercase text-center mb-1">โอกาสพบสิ่งลี้ลับ</p>
       <svg viewBox="0 0 200 110" className="w-full max-w-[260px] mx-auto block">
         <style>{`@keyframes pulseArc{0%,100%{opacity:.9}50%{opacity:.35}}`}</style>
         <path d={fullArc()} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="14" strokeLinecap="butt" />
@@ -491,7 +491,7 @@ function LocationStep({ location, geocode, nearbyPlaces, weather, detectionProb,
     return (
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="rounded-card bg-white/[0.04] border border-gold/[0.15] p-6 text-center space-y-3 max-w-xs w-full">
-          <p className="font-sans text-[11px] text-gold/40 tracking-widest uppercase">เขตหวงห้าม</p>
+          <p className="font-sans text-[14px] text-gold/40 tracking-widest uppercase">เขตหวงห้าม</p>
           <p className="font-serif text-gold text-sm leading-relaxed">พื้นที่นี้อยู่ภายใต้การคุ้มครองพิเศษ</p>
           <p className="font-sans text-xs text-dim/55 leading-relaxed">
             สำนักงานตรวจสอบสิ่งลี้ลับไม่ดำเนินการในบริเวณดังกล่าว
@@ -521,7 +521,7 @@ function LocationStep({ location, geocode, nearbyPlaces, weather, detectionProb,
         ].map(({ label, value }) => (
           <div key={label} className="rounded-card bg-white/[0.04] border border-gold/[0.1] py-2.5 text-center">
             <p className="font-serif text-gold text-xl leading-none">{value}</p>
-            <p className="font-sans text-[11px] text-dim/45 mt-1">{label}</p>
+            <p className="font-sans text-[14px] text-dim/45 mt-1">{label}</p>
           </div>
         ))}
       </div>
@@ -533,7 +533,7 @@ function LocationStep({ location, geocode, nearbyPlaces, weather, detectionProb,
       {weather.isRainy && (
         <div className="rounded-card border border-blue-800/[0.2] bg-blue-900/[0.05] px-3 py-2 flex items-center gap-2">
           <span className="text-sm">🌧</span>
-          <span className="font-sans text-[11px] text-blue-400/60">ฝนตก — โอกาสพบผีน้ำและเร่ร่อนเพิ่มขึ้น</span>
+          <span className="font-sans text-[14px] text-blue-400/60">ฝนตก — โอกาสพบผีน้ำและเร่ร่อนเพิ่มขึ้น</span>
         </div>
       )}
 
@@ -541,7 +541,7 @@ function LocationStep({ location, geocode, nearbyPlaces, weather, detectionProb,
       <div className="rounded-card bg-white/[0.04] border border-gold/[0.12] p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 space-y-0.5">
-            <p className="font-sans text-[11px] text-dim/40 tracking-widest uppercase">ตำแหน่งปัจจุบัน</p>
+            <p className="font-sans text-[14px] text-dim/40 tracking-widest uppercase">ตำแหน่งปัจจุบัน</p>
             {loading && (
               <div className="flex items-center gap-2 py-1">
                 <div className="w-3 h-3 border border-gold/30 border-t-gold animate-spin rounded-full shrink-0" />
@@ -551,7 +551,7 @@ function LocationStep({ location, geocode, nearbyPlaces, weather, detectionProb,
             {error && (
               <div className="space-y-1.5 pt-1">
                 <p className="font-sans text-xs text-red-400/65">{error}</p>
-                <button onClick={onRetry} className="font-sans text-[11px] text-gold/55 border border-gold/[0.2] rounded-sm px-3 py-1">
+                <button onClick={onRetry} className="font-sans text-[14px] text-gold/55 border border-gold/[0.2] rounded-sm px-3 py-1">
                   ลองอีกครั้ง
                 </button>
               </div>
@@ -560,7 +560,7 @@ function LocationStep({ location, geocode, nearbyPlaces, weather, detectionProb,
               <>
                 <p className="font-sans text-sm text-parchment/85 pt-0.5">{geocode?.locality || 'ไม่ทราบสถานที่'}</p>
                 {geocode?.province && <p className="font-sans text-xs text-dim/55">{geocode.province}</p>}
-                <p className="font-mono text-[11px] text-dim/28 tracking-wider pt-0.5">
+                <p className="font-mono text-[14px] text-dim/28 tracking-wider pt-0.5">
                   {location.lat.toFixed(5)}, {location.lng.toFixed(5)}
                 </p>
               </>
@@ -575,15 +575,15 @@ function LocationStep({ location, geocode, nearbyPlaces, weather, detectionProb,
       {/* Nearby places */}
       {topPlaces.length > 0 && (
         <div className="space-y-1.5">
-          <p className="font-sans text-[11px] text-dim/40 tracking-widest uppercase px-0.5">สถานที่ใกล้เคียง</p>
+          <p className="font-sans text-[14px] text-dim/40 tracking-widest uppercase px-0.5">สถานที่ใกล้เคียง</p>
           <div className="space-y-1.5">
             {topPlaces.map((place, i) => (
               <div key={i} className="rounded-card bg-white/[0.03] border border-dim/[0.1] flex items-center justify-between px-3 py-2.5 gap-3">
                 <div className="min-w-0">
                   <p className="font-sans text-xs text-parchment/75 truncate">{place.name}</p>
-                  <p className="font-sans text-[11px] text-dim/45">{place.typeLabel} · {place.distance}</p>
+                  <p className="font-sans text-[14px] text-dim/45">{place.typeLabel} · {place.distance}</p>
                 </div>
-                <span className={`font-sans text-[11px] border px-1.5 py-0.5 rounded-sm shrink-0 ${RISK_STYLES[place.risk]}`}>
+                <span className={`font-sans text-[14px] border px-1.5 py-0.5 rounded-sm shrink-0 ${RISK_STYLES[place.risk]}`}>
                   {place.riskLabel}
                 </span>
               </div>
@@ -612,7 +612,7 @@ function LocationStep({ location, geocode, nearbyPlaces, weather, detectionProb,
         >
           เริ่มการสแกน →
         </button>
-        <p className="font-sans text-[11px] text-dim/30 text-center tracking-wider">
+        <p className="font-sans text-[14px] text-dim/30 text-center tracking-wider">
           ระบบพร้อมปฏิบัติการ · STL-{yearBE}
         </p>
       </div>
@@ -633,7 +633,7 @@ function CaptureStep({ capturedImage, cameraInputRef, fileInputRef, onCapture, o
 
         {!capturedImage && !converting && (
           <div className="space-y-3">
-            <p className="font-sans text-[12px] text-dim/40 tracking-widest uppercase text-center">
+            <p className="font-sans text-[15px] text-dim/40 tracking-widest uppercase text-center">
               บันทึกหลักฐานภาคสนาม
             </p>
             <div className="grid grid-cols-2 gap-2.5">
@@ -660,7 +660,7 @@ function CaptureStep({ capturedImage, cameraInputRef, fileInputRef, onCapture, o
 
         {capturedImage && !converting && (
           <div className="space-y-2.5">
-            <p className="font-sans text-[12px] text-dim/40 tracking-widest uppercase text-center">
+            <p className="font-sans text-[15px] text-dim/40 tracking-widest uppercase text-center">
               ตัวอย่างภาพ
             </p>
             <div className="rounded-card overflow-hidden border border-dim/[0.15]">

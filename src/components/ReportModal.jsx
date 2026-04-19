@@ -10,7 +10,7 @@ export default function ReportModal({ report, onClose }) {
       <div className="min-h-full flex flex-col" onClick={(e) => e.stopPropagation()}>
         {/* Sticky header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gold/10 sticky top-0 bg-ink z-10">
-          <span className="font-mono text-[12px] text-dim/50 tracking-widest">{report.report_number}</span>
+          <span className="font-mono text-[15px] text-dim/50 tracking-widest">{report.report_number}</span>
           <button
             onClick={onClose}
             className="font-sans text-dim/50 text-xs border border-dim/[0.15] rounded-sm px-2.5 py-1 hover:border-dim/30 transition-colors"
@@ -21,7 +21,7 @@ export default function ReportModal({ report, onClose }) {
 
         <div className="p-3 space-y-2.5">
           {/* Date */}
-          <p className="font-sans text-[12px] text-dim/35 tracking-widest text-center pt-1">
+          <p className="font-sans text-[15px] text-dim/35 tracking-widest text-center pt-1">
             {formatThaiDate(report.created_at)}
           </p>
 
@@ -57,7 +57,7 @@ export default function ReportModal({ report, onClose }) {
 
             {report.claude_reason && (
               <div className="border-t border-gold/[0.08] pt-3 space-y-1">
-                <span className="font-sans text-[12px] text-dim/45 tracking-widest uppercase">
+                <span className="font-sans text-[15px] text-dim/45 tracking-widest uppercase">
                   บันทึกการวิเคราะห์
                 </span>
                 <p className="font-sans text-xs text-parchment/55 italic leading-relaxed">
@@ -70,14 +70,14 @@ export default function ReportModal({ report, onClose }) {
           {/* Coexist tip */}
           {ghost?.coexistTip && (
             <div className="rounded-card border border-gold/[0.12] bg-gold/[0.03] p-4 space-y-1.5">
-              <span className="font-sans text-[12px] text-gold/50 tracking-widest uppercase">คำแนะนำ</span>
+              <span className="font-sans text-[15px] text-gold/50 tracking-widest uppercase">คำแนะนำ</span>
               <p className="font-sans text-xs text-parchment/55 leading-relaxed">{ghost.coexistTip}</p>
             </div>
           )}
 
           {/* Coordinates */}
           {report.lat && report.lng && (
-            <p className="font-mono text-[11px] text-dim/25 text-center tracking-widest pb-2">
+            <p className="font-mono text-[14px] text-dim/25 text-center tracking-widest pb-2">
               {Number(report.lat).toFixed(6)}, {Number(report.lng).toFixed(6)}
             </p>
           )}
@@ -90,7 +90,7 @@ export default function ReportModal({ report, onClose }) {
 function InfoRow({ label, value }) {
   return (
     <div>
-      <span className="font-sans text-[12px] text-dim/40 tracking-widest uppercase block">{label}</span>
+      <span className="font-sans text-[15px] text-dim/40 tracking-widest uppercase block">{label}</span>
       <span className="font-sans text-xs text-parchment/70">{value}</span>
     </div>
   )

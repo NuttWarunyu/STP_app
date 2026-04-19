@@ -63,7 +63,7 @@ export default function Auth() {
           <div className="text-center">
             <h1 className="font-serif text-gold text-lg leading-snug">สำนักงานตรวจสอบสิ่งลี้ลับ</h1>
             <p className="font-sans text-xs text-dim mt-0.5">แห่งประเทศไทย · OPIT</p>
-            <p className="font-sans text-[10px] text-dim/50">Field Scanner · v1.0</p>
+            <p className="font-sans text-[13px] text-dim/50">Field Scanner · v1.0</p>
           </div>
         </div>
 
@@ -90,7 +90,7 @@ export default function Auth() {
           <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-3">
             {mode === 'register' && (
               <div>
-                <label className="font-sans text-[10px] text-dim/50 tracking-wider block mb-1">
+                <label className="font-sans text-[13px] text-dim/50 tracking-wider block mb-1">
                   ชื่อเจ้าหน้าที่
                 </label>
                 <input
@@ -105,7 +105,7 @@ export default function Auth() {
             )}
 
             <div>
-              <label className="font-sans text-[10px] text-dim/50 tracking-wider block mb-1">
+              <label className="font-sans text-[13px] text-dim/50 tracking-wider block mb-1">
                 อีเมล
               </label>
               <input
@@ -119,7 +119,7 @@ export default function Auth() {
             </div>
 
             <div>
-              <label className="font-sans text-[10px] text-dim/50 tracking-wider block mb-1">
+              <label className="font-sans text-[13px] text-dim/50 tracking-wider block mb-1">
                 รหัสผ่าน
               </label>
               <input
@@ -150,7 +150,7 @@ export default function Auth() {
           </form>
         </div>
 
-        <p className="font-sans text-[10px] text-dim/30 text-center">
+        <p className="font-sans text-[13px] text-dim/30 text-center">
           เอกสารลับ — ห้ามเผยแพร่
         </p>
       </div>

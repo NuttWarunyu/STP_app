@@ -31,15 +31,15 @@ export default function GhostSlot({ ghostClass, report, onClick }) {
       <div className="border-t border-dim/[0.1] p-2 space-y-1">
         {collected ? (
           <>
-            <p className="font-sans text-[12px] text-parchment/75 truncate leading-tight">
+            <p className="font-sans text-[15px] text-parchment/75 truncate leading-tight">
               {ghost?.nameTh || ghostClass}
             </p>
             <DangerDots level={ghost?.dangerLevel || 1} />
           </>
         ) : (
           <>
-            <p className="font-sans text-[12px] text-dim/30 leading-tight">???</p>
-            <p className="font-sans text-[11px] text-dim/20 truncate">{ghostClass}</p>
+            <p className="font-sans text-[15px] text-dim/30 leading-tight">???</p>
+            <p className="font-sans text-[14px] text-dim/20 truncate">{ghostClass}</p>
           </>
         )}
       </div>

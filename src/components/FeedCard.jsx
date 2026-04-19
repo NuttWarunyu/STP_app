@@ -30,7 +30,7 @@ export default function FeedCard({ report, onClick }) {
             </span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className={`font-sans text-[11px] border px-1.5 py-0.5 rounded-sm ${pillColor}`}>
+            <span className={`font-sans text-[14px] border px-1.5 py-0.5 rounded-sm ${pillColor}`}>
               {report.ghost_class}
             </span>
             <DangerDots level={report.danger_level || ghost?.dangerLevel || 1} />
@@ -45,18 +45,18 @@ export default function FeedCard({ report, onClick }) {
         {/* Row 3: officer + report number + date */}
         <div className="flex items-center justify-between border-t border-gold/[0.08] pt-2">
           <div className="flex items-center gap-1.5">
-            <span className="font-sans text-[12px] text-dim/50">
+            <span className="font-sans text-[15px] text-dim/50">
               {report.profiles?.username || 'เจ้าหน้าที่'}
             </span>
             {report.profiles?.rank_level && (
-              <span className="font-sans text-[11px] border border-dim/20 px-1 py-px text-dim/40 rounded-sm">
+              <span className="font-sans text-[14px] border border-dim/20 px-1 py-px text-dim/40 rounded-sm">
                 ระดับ {report.profiles.rank_level}
               </span>
             )}
           </div>
           <div className="text-right">
-            <p className="font-mono text-[11px] text-dim/35 tracking-wider">{report.report_number}</p>
-            <p className="font-sans text-[11px] text-dim/35">{formatThaiDate(report.created_at)}</p>
+            <p className="font-mono text-[14px] text-dim/35 tracking-wider">{report.report_number}</p>
+            <p className="font-sans text-[14px] text-dim/35">{formatThaiDate(report.created_at)}</p>
           </div>
         </div>
       </div>

@@ -6,9 +6,9 @@ export default function Header({ title, rankLevel = 1 }) {
       <div className="flex items-center gap-2.5">
         <OPITSeal size={26} />
         <div>
-          <p className="font-serif text-gold text-[11px] leading-tight">สำนักงานตรวจสอบ</p>
-          <p className="font-serif text-gold text-[11px] leading-tight">สิ่งลี้ลับ</p>
-          <p className="font-sans text-dim/35 text-[10px] tracking-wider mt-0.5">OPIT</p>
+          <p className="font-serif text-gold text-[14px] leading-tight">สำนักงานตรวจสอบ</p>
+          <p className="font-serif text-gold text-[14px] leading-tight">สิ่งลี้ลับ</p>
+          <p className="font-sans text-dim/35 text-[13px] tracking-wider mt-0.5">OPIT</p>
         </div>
       </div>
       <h1 className="font-sans text-parchment/80 text-sm font-normal tracking-wide text-center flex-1 px-3">
