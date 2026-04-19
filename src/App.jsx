@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase, getProfile, upsertProfile } from './lib/supabase'
-import Auth from './components/Auth'
+import Splash from './components/Splash'
+import UpgradePrompt, { shouldShowUpgrade } from './components/UpgradePrompt'
 import Feed from './components/Feed'
 import Scanner from './components/Scanner'
 import Passport from './components/Passport'
@@ -58,6 +59,7 @@ export default function App() {
   const [profile, setProfile] = useState(null)
   const [activeTab, setActiveTab] = useState('scan')
   const [loading, setLoading] = useState(true)
+  const [showUpgrade, setShowUpgrade] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -97,6 +99,12 @@ export default function App() {
     }
   }
 
+  useEffect(() => {
+    if (profile && session && shouldShowUpgrade(profile, session)) {
+      setShowUpgrade(true)
+    }
+  }, [profile?.total_detections])
+
   if (loading) {
     return (
       <div className="min-h-screen bg-ink flex items-center justify-center">
@@ -108,7 +116,7 @@ export default function App() {
     )
   }
 
-  if (!session) return <Auth />
+  if (!session) return <Splash />
 
   return (
     <div className="min-h-screen bg-ink flex flex-col max-w-md mx-auto relative">
@@ -118,6 +126,10 @@ export default function App() {
         {activeTab === 'passport' && <Passport profile={profile} />}
         {activeTab === 'profile' && <Profile profile={profile} onProfileUpdate={setProfile} />}
       </div>
+
+      {showUpgrade && (
+        <UpgradePrompt onDismiss={() => setShowUpgrade(false)} />
+      )}
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-30 bg-ink border-t border-gold/10">
