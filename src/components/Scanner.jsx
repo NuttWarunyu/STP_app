@@ -164,7 +164,8 @@ export default function Scanner({ profile, onProfileUpdate }) {
             ghostPrompt: selectedGhost.inpaintingPrompt,
           })
         } catch (e) {
-          console.warn('Ghost overlay failed, using original:', e)
+          console.warn('Ghost overlay failed:', e.message)
+          setError(`overlay: ${e.message}`)
         }
 
         const seq = getNextSequence()
@@ -306,6 +307,11 @@ export default function Scanner({ profile, onProfileUpdate }) {
 
       {step === 'report' && report && (
         <div className="flex-1 overflow-y-auto">
+          {error && (
+            <div className="bg-red-950/40 border-b border-red-900/40 px-3 py-2">
+              <p className="font-mono text-[12px] text-red-400/80 break-all">{error}</p>
+            </div>
+          )}
           <ReportCard
             report={report}
             profile={profile}

@@ -59,7 +59,7 @@ export async function generateGhostOverlay({ base64Image, ghostClass, placement,
 
   const formData = new FormData()
   formData.append('model', 'gpt-image-1')
-  formData.append('image[]', imageBlob, 'image.png')
+  formData.append('image', imageBlob, 'image.png')
   formData.append('prompt', prompt)
   formData.append('n', '1')
   formData.append('size', '1024x1024')
