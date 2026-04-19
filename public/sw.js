@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stl-scanner-v1'
+const CACHE_NAME = 'stl-scanner-v3'
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -35,8 +35,18 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  // Assets with content hashes are immutable — but always try network first
+  // to avoid serving stale cached bad responses
+  const isAsset = url.pathname.startsWith('/assets/')
+
   event.respondWith(
-    caches.match(event.request).then((cached) => {
+    isAsset
+      ? fetch(event.request).then((res) => {
+          const clone = res.clone()
+          caches.open(CACHE_NAME).then((c) => c.put(event.request, clone))
+          return res
+        }).catch(() => caches.match(event.request))
+      : caches.match(event.request).then((cached) => {
       if (cached) return cached
 
       return fetch(event.request).catch(() => {
