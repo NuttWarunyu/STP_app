@@ -311,17 +311,27 @@ export default function Scanner({ profile, onProfileUpdate }) {
 function GaugeChart({ prob }) {
   const pct = Math.round(prob * 100)
 
+  // Convert 0-100% to a point on the semicircle arc
+  // 0% = left (180°), 100% = right (0°), 50% = top (90°)
   function pt(p, r = 74) {
-    const a = (180 - p * 1.8) * Math.PI / 180
-    return [+(100 + r * Math.cos(a)).toFixed(1), +(100 - r * Math.sin(a)).toFixed(1)]
+    const deg = 180 - p * 1.8
+    const rad = deg * Math.PI / 180
+    return [+(100 + r * Math.cos(rad)).toFixed(2), +(100 - r * Math.sin(rad)).toFixed(2)]
   }
 
+  // Draw arc from p1% to p2% — always small arc (max span = 180°, never needs large-arc=1)
   function arc(p1, p2, r = 74) {
     const [x1, y1] = pt(p1, r)
     const [x2, y2] = pt(p2, r)
-    if (Math.abs(x2 - x1) < 0.1 && Math.abs(y2 - y1) < 0.1) return ''
-    const large = (p2 - p1) > 50 ? 1 : 0
-    return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 0 ${x2} ${y2}`
+    return `M ${x1} ${y1} A ${r} ${r} 0 0 0 ${x2} ${y2}`
+  }
+
+  // Full semicircle split into two 90° arcs to avoid SVG degenerate case
+  function fullArc(r = 74) {
+    const [lx, ly] = pt(0, r)    // left
+    const [tx, ty] = pt(50, r)   // top
+    const [rx, ry] = pt(100, r)  // right
+    return `M ${lx} ${ly} A ${r} ${r} 0 0 0 ${tx} ${ty} A ${r} ${r} 0 0 0 ${rx} ${ry}`
   }
 
   const fillColor = pct >= 60 ? '#8b1a1a' : pct >= 40 ? '#c9a84c' : '#4ade80'
@@ -331,30 +341,33 @@ function GaugeChart({ prob }) {
   return (
     <div className="rounded-card bg-white/[0.04] border border-gold/[0.1] py-3 px-2">
       <p className="font-sans text-[11px] text-dim/40 tracking-widest uppercase text-center mb-1">โอกาสพบสิ่งลี้ลับ</p>
-      <svg viewBox="0 0 200 108" className="w-full max-w-[260px] mx-auto block">
+      <svg viewBox="0 0 200 110" className="w-full max-w-[260px] mx-auto block">
         {/* Background track */}
-        <path d={arc(0, 100)} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="14" />
+        <path d={fullArc()} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="14" strokeLinecap="butt" />
         {/* Zone arcs */}
-        <path d={arc(0, 40)}   fill="none" stroke="#4ade80" strokeWidth="14" strokeLinecap="butt" opacity="0.22" />
-        <path d={arc(40, 60)}  fill="none" stroke="#c9a84c" strokeWidth="14" strokeLinecap="butt" opacity="0.22" />
-        <path d={arc(60, 100)} fill="none" stroke="#8b1a1a" strokeWidth="14" strokeLinecap="butt" opacity="0.22" />
+        <path d={arc(0, 40)}   fill="none" stroke="#4ade80" strokeWidth="14" strokeLinecap="butt" opacity="0.25" />
+        <path d={arc(40, 60)}  fill="none" stroke="#c9a84c" strokeWidth="14" strokeLinecap="butt" opacity="0.25" />
+        <path d={arc(60, 100)} fill="none" stroke="#8b1a1a" strokeWidth="14" strokeLinecap="butt" opacity="0.25" />
         {/* Fill arc */}
-        {pct > 0 && (
-          <path d={arc(0, Math.min(pct, 99))} fill="none" stroke={fillColor} strokeWidth="14" strokeLinecap="round" opacity="0.9" />
+        {pct > 0 && pct < 100 && (
+          <path d={arc(0, pct)} fill="none" stroke={fillColor} strokeWidth="14" strokeLinecap="round" opacity="0.9" />
+        )}
+        {pct >= 100 && (
+          <path d={fullArc()} fill="none" stroke={fillColor} strokeWidth="14" strokeLinecap="round" opacity="0.9" />
         )}
         {/* Needle */}
         <g transform={`rotate(${needleAngle}, 100, 100)`}>
-          <line x1="100" y1="100" x2="100" y2="30" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.85" />
+          <line x1="100" y1="100" x2="100" y2="32" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.9" />
         </g>
-        {/* Pivot cap */}
-        <circle cx="100" cy="100" r="5" fill="#c9a84c" opacity="0.75" />
-        {/* Center text */}
-        <text x="100" y="76" textAnchor="middle" fill="white" fontSize="28" fontWeight="bold" fontFamily="serif" opacity="0.9">{pct}%</text>
+        {/* Pivot */}
+        <circle cx="100" cy="100" r="5" fill="#c9a84c" opacity="0.8" />
+        {/* Percentage */}
+        <text x="100" y="77" textAnchor="middle" fill="white" fontSize="28" fontWeight="bold" fontFamily="serif" opacity="0.9">{pct}%</text>
         <text x="100" y="91" textAnchor="middle" fill="white" fontSize="8" fontFamily="sans-serif" opacity="0.4" letterSpacing="2">{labelTh.toUpperCase()}</text>
-        {/* Zone labels */}
-        <text x="26" y="107" textAnchor="middle" fill="#4ade80" fontSize="7" fontFamily="sans-serif" opacity="0.5">ต่ำ</text>
-        <text x="100" y="24" textAnchor="middle" fill="#c9a84c" fontSize="7" fontFamily="sans-serif" opacity="0.5">กลาง</text>
-        <text x="174" y="107" textAnchor="middle" fill="#8b1a1a" fontSize="7" fontFamily="sans-serif" opacity="0.6">สูง</text>
+        {/* Edge labels */}
+        <text x="24"  y="108" textAnchor="middle" fill="#4ade80" fontSize="7" opacity="0.5">ต่ำ</text>
+        <text x="100" y="22"  textAnchor="middle" fill="#c9a84c" fontSize="7" opacity="0.5">กลาง</text>
+        <text x="176" y="108" textAnchor="middle" fill="#8b1a1a" fontSize="7" opacity="0.6">สูง</text>
       </svg>
     </div>
   )
