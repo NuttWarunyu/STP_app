@@ -47,6 +47,7 @@ export default function Scanner({ profile, onProfileUpdate }) {
   const [converting, setConverting] = useState(false)
   const [incidentReport, setIncidentReport] = useState(null)
   const [loadingIncident, setLoadingIncident] = useState(false)
+  const [incidentDismissed, setIncidentDismissed] = useState(false)
   const fileInputRef = useRef(null)
   const cameraInputRef = useRef(null)
 
@@ -246,7 +247,14 @@ export default function Scanner({ profile, onProfileUpdate }) {
 
   return (
     <div className="flex flex-col h-full">
-      <Header title="สแกนภาคสนาม" rankLevel={profile?.rank_level || 1} />
+      {step !== 'report' && <Header title="สแกนภาคสนาม" rankLevel={profile?.rank_level || 1} />}
+      {step === 'location' && !incidentDismissed && (loadingIncident || incidentReport) && (
+        <EmergencyAlert
+          report={incidentReport}
+          loading={loadingIncident}
+          onDismiss={() => setIncidentDismissed(true)}
+        />
+      )}
 
       {step === 'location' && (
         <LocationStep
@@ -319,61 +327,91 @@ export default function Scanner({ profile, onProfileUpdate }) {
 
 function GaugeChart({ prob }) {
   const pct = Math.round(prob * 100)
+  const targetAngle = pct * 1.8 - 90
 
-  // Convert 0-100% to a point on the semicircle arc
-  // 0% = left (180°), 100% = right (0°), 50% = top (90°)
+  const [phase, setPhase] = useState('pre')
+  const [displayPct, setDisplayPct] = useState(0)
+  const [floatOffset, setFloatOffset] = useState(0)
+  const [pctOffset, setPctOffset] = useState(0)
+  const rafRef = useRef(null)
+
   function pt(p, r = 74) {
     const deg = 180 - p * 1.8
     const rad = deg * Math.PI / 180
     return [+(100 + r * Math.cos(rad)).toFixed(2), +(100 - r * Math.sin(rad)).toFixed(2)]
   }
-
-  // sweep=1 (CW in screen) draws the upper arc; sweep=0 draws the lower arc (wrong)
   function arc(p1, p2, r = 74) {
     const [x1, y1] = pt(p1, r)
     const [x2, y2] = pt(p2, r)
     return `M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}`
   }
-
-  // Full semicircle split into two 90° arcs to avoid SVG degenerate case
   function fullArc(r = 74) {
-    const [lx, ly] = pt(0, r)
-    const [tx, ty] = pt(50, r)
-    const [rx, ry] = pt(100, r)
+    const [lx, ly] = pt(0, r); const [tx, ty] = pt(50, r); const [rx, ry] = pt(100, r)
     return `M ${lx} ${ly} A ${r} ${r} 0 0 1 ${tx} ${ty} A ${r} ${r} 0 0 1 ${rx} ${ry}`
   }
 
+  useEffect(() => {
+    setPhase('pre'); setDisplayPct(0); setFloatOffset(0); setPctOffset(0)
+    if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    const t1 = setTimeout(() => {
+      setPhase('entry')
+      const start = Date.now()
+      const countUp = () => {
+        const p = Math.min((Date.now() - start) / 2000, 1)
+        setDisplayPct(Math.round(pct * p))
+        if (p < 1) rafRef.current = requestAnimationFrame(countUp)
+      }
+      rafRef.current = requestAnimationFrame(countUp)
+    }, 80)
+    const t2 = setTimeout(() => { setPhase('float'); setDisplayPct(pct) }, 2200)
+    return () => { clearTimeout(t1); clearTimeout(t2); if (rafRef.current) cancelAnimationFrame(rafRef.current) }
+  }, [pct])
+
+  useEffect(() => {
+    if (phase !== 'float') return
+    const amp = pct >= 60 ? 8 : pct >= 40 ? 5 : 3
+    const period = (pct >= 60 ? 2 : pct >= 40 ? 3 : 4) * 1000
+    const pctAmp = pct >= 60 ? 2 : 1
+    const start = Date.now()
+    const animate = () => {
+      const wave = Math.sin(2 * Math.PI * (Date.now() - start) / period)
+      setFloatOffset(amp * wave); setPctOffset(Math.round(pctAmp * wave))
+      rafRef.current = requestAnimationFrame(animate)
+    }
+    rafRef.current = requestAnimationFrame(animate)
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
+  }, [phase, pct])
+
+  const needleRotation = phase === 'float' ? targetAngle + floatOffset : (phase === 'entry' ? targetAngle : -90)
+  const needleTransition = phase === 'entry' ? 'transform 2s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none'
+  const currentPct = phase === 'float' ? Math.max(0, Math.min(100, pct + pctOffset)) : displayPct
   const fillColor = pct >= 60 ? '#8b1a1a' : pct >= 40 ? '#c9a84c' : '#4ade80'
   const labelTh = pct >= 60 ? 'เสี่ยงสูง' : pct >= 40 ? 'ปานกลาง' : 'ปลอดภัย'
-  const needleAngle = pct * 1.8 - 90
+  const pulseSpeed = pct >= 60 ? '2s' : pct >= 40 ? '2.5s' : '3s'
 
   return (
     <div className="rounded-card bg-white/[0.04] border border-gold/[0.1] py-3 px-2">
       <p className="font-sans text-[11px] text-dim/40 tracking-widest uppercase text-center mb-1">โอกาสพบสิ่งลี้ลับ</p>
       <svg viewBox="0 0 200 110" className="w-full max-w-[260px] mx-auto block">
-        {/* Background track */}
+        <style>{`@keyframes pulseArc{0%,100%{opacity:.9}50%{opacity:.35}}`}</style>
         <path d={fullArc()} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="14" strokeLinecap="butt" />
-        {/* Zone arcs */}
         <path d={arc(0, 40)}   fill="none" stroke="#4ade80" strokeWidth="14" strokeLinecap="butt" opacity="0.25" />
         <path d={arc(40, 60)}  fill="none" stroke="#c9a84c" strokeWidth="14" strokeLinecap="butt" opacity="0.25" />
         <path d={arc(60, 100)} fill="none" stroke="#8b1a1a" strokeWidth="14" strokeLinecap="butt" opacity="0.25" />
-        {/* Fill arc */}
         {pct > 0 && pct < 100 && (
-          <path d={arc(0, pct)} fill="none" stroke={fillColor} strokeWidth="14" strokeLinecap="round" opacity="0.9" />
+          <path d={arc(0, pct)} fill="none" stroke={fillColor} strokeWidth="14" strokeLinecap="round"
+            style={{ animation: `pulseArc ${pulseSpeed} ease-in-out infinite` }} />
         )}
         {pct >= 100 && (
-          <path d={fullArc()} fill="none" stroke={fillColor} strokeWidth="14" strokeLinecap="round" opacity="0.9" />
+          <path d={fullArc()} fill="none" stroke={fillColor} strokeWidth="14" strokeLinecap="round"
+            style={{ animation: `pulseArc ${pulseSpeed} ease-in-out infinite` }} />
         )}
-        {/* Needle */}
-        <g transform={`rotate(${needleAngle}, 100, 100)`}>
+        <g style={{ transformBox: 'view-box', transformOrigin: '100px 100px', transform: `rotate(${needleRotation}deg)`, transition: needleTransition }}>
           <line x1="100" y1="100" x2="100" y2="32" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.9" />
         </g>
-        {/* Pivot */}
         <circle cx="100" cy="100" r="5" fill="#c9a84c" opacity="0.8" />
-        {/* Percentage */}
-        <text x="100" y="77" textAnchor="middle" fill="white" fontSize="28" fontWeight="bold" fontFamily="serif" opacity="0.9">{pct}%</text>
+        <text x="100" y="77" textAnchor="middle" fill="white" fontSize="28" fontWeight="bold" fontFamily="serif" opacity="0.9">{currentPct}%</text>
         <text x="100" y="91" textAnchor="middle" fill="white" fontSize="8" fontFamily="sans-serif" opacity="0.4" letterSpacing="2">{labelTh.toUpperCase()}</text>
-        {/* Edge labels */}
         <text x="24"  y="108" textAnchor="middle" fill="#4ade80" fontSize="7" opacity="0.5">ต่ำ</text>
         <text x="100" y="22"  textAnchor="middle" fill="#c9a84c" fontSize="7" opacity="0.5">กลาง</text>
         <text x="176" y="108" textAnchor="middle" fill="#8b1a1a" fontSize="7" opacity="0.6">สูง</text>
@@ -382,38 +420,71 @@ function GaugeChart({ prob }) {
   )
 }
 
-function IncidentCard({ report, loading }) {
-  if (loading) {
-    return (
-      <div className="rounded-sm border border-red-900/30 bg-red-950/10 px-3 py-2.5 space-y-1.5">
-        <p className="font-mono text-[11px] text-red-400/40 tracking-widest">░░ บันทึกเหตุการณ์ · ปิดลับ ░░</p>
-        <div className="space-y-1.5 py-1">
-          <div className="h-2.5 w-4/5 bg-white/[0.04] rounded animate-pulse" />
-          <div className="h-2.5 w-3/5 bg-white/[0.04] rounded animate-pulse" />
-        </div>
-      </div>
-    )
-  }
-  if (!report) return null
+function EmergencyAlert({ report, loading, onDismiss }) {
+  const [visible, setVisible] = useState(false)
+  useEffect(() => { const t = setTimeout(() => setVisible(true), 50); return () => clearTimeout(t) }, [])
+
+  const caseRef = report?.case_ref || 'STL-████-█████'
+
   return (
-    <div className="rounded-sm border border-red-900/35 bg-red-950/[0.08]">
-      <div className="px-3 pt-2.5 pb-1 border-b border-red-900/20">
-        <p className="font-mono text-[11px] text-red-400/50 tracking-widest">░░ บันทึกเหตุการณ์ · ปิดลับ ░░</p>
-      </div>
-      <div className="px-3 pt-2 pb-2.5 space-y-1.5">
-        <p className="font-mono text-[10px] text-dim/30 tracking-widest">{report.case_ref}</p>
-        {(report.entries || []).map((entry, i) => (
-          <p key={i} className="font-mono text-[12px] leading-relaxed" style={{ color: '#d4c4a8', opacity: 0.75 }}>
-            · {entry}
+    <div style={{
+      position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.92)', zIndex: 100,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      opacity: visible ? 1 : 0, transition: 'opacity 0.3s',
+    }}>
+      <div style={{
+        width: '85%', maxWidth: 380, background: '#0f0805',
+        border: '2px solid #8b1a1a', borderRadius: 12, overflow: 'hidden',
+        transform: visible ? 'scale(1)' : 'scale(0.95)', transition: 'transform 0.3s',
+      }}>
+        <div style={{ height: 3, background: '#8b1a1a' }} />
+        <div style={{ padding: '20px 24px 24px' }}>
+          <p style={{ fontFamily: 'monospace', fontSize: 10, color: '#8b1a1a', letterSpacing: '0.2em', margin: 0 }}>
+            ⚠ แจ้งเตือนพื้นที่
           </p>
-        ))}
-        <p className="font-mono text-[10px] pt-1" style={{ color: '#3a2a18' }}>* เนื้อหาสมมติเพื่อความบันเทิง</p>
+          <p style={{ fontFamily: 'monospace', fontSize: 8, color: '#3a2a18', marginTop: 4, marginBottom: 20 }}>
+            รหัสเคส: {caseRef} · ปิดลับ
+          </p>
+
+          {loading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+              {[['90%'], ['70%'], ['80%']].map(([w], i) => (
+                <div key={i} style={{ height: 10, width: w, background: 'rgba(255,255,255,0.04)', borderRadius: 4, animation: 'pulse 1.5s ease-in-out infinite' }} />
+              ))}
+            </div>
+          ) : (
+            <div style={{ marginBottom: 20 }}>
+              {(report?.entries || []).map((entry, i) => (
+                <p key={i} style={{ fontFamily: 'monospace', fontSize: 11, color: '#d4c4a8', lineHeight: 1.8, margin: '0 0 4px' }}>
+                  · {entry}
+                </p>
+              ))}
+              <span style={{ display: 'inline-block', width: 1, height: '0.9em', background: '#d4c4a8', marginLeft: 4, verticalAlign: 'middle', animation: 'blink 1s step-end infinite' }} />
+            </div>
+          )}
+
+          <p style={{ fontFamily: 'monospace', fontSize: 7, color: '#2a1a10', textAlign: 'center', marginBottom: 12 }}>
+            * เนื้อหาสมมติเพื่อความบันเทิง
+          </p>
+          <button
+            onClick={onDismiss}
+            disabled={loading}
+            style={{
+              width: '100%', background: loading ? '#3a0f0f' : '#8b1a1a', border: 'none',
+              borderRadius: 6, padding: '10px 0', fontFamily: 'Georgia, serif',
+              fontSize: 12, color: '#f5ead6', cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.5 : 1, transition: 'opacity 0.2s',
+            }}
+          >
+            {loading ? 'กำลังเข้าถึงฐานข้อมูล...' : 'รับทราบ · ดำเนินการต่อ'}
+          </button>
+        </div>
       </div>
     </div>
   )
 }
 
-function LocationStep({ location, geocode, nearbyPlaces, weather, detectionProb, loading, error, isRoyalZone, scansToday, dailyLimit, canScan, onRetry, onNext, profile, incidentReport, loadingIncident }) {
+function LocationStep({ location, geocode, nearbyPlaces, weather, detectionProb, loading, error, isRoyalZone, scansToday, dailyLimit, canScan, onRetry, onNext, profile }) {
   const yearBE = new Date().getFullYear() + 543
 
   if (isRoyalZone) {
@@ -457,11 +528,6 @@ function LocationStep({ location, geocode, nearbyPlaces, weather, detectionProb,
 
       {/* Gauge hero */}
       <GaugeChart prob={loading ? 0.35 : detectionProb} />
-
-      {/* Incident report */}
-      {(loadingIncident || incidentReport) && (
-        <IncidentCard report={incidentReport} loading={loadingIncident} />
-      )}
 
       {/* Weather notice */}
       {weather.isRainy && (
