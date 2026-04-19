@@ -3,14 +3,14 @@ export const RANKS = [
     level: 1,
     nameTh: 'เจ้าหน้าที่ฝึกหัด',
     nameEn: 'Trainee Officer',
-    dailyScans: 3,
+    dailyScans: 10,
     unlocks: [],
   },
   {
     level: 2,
     nameTh: 'เจ้าหน้าที่ภาคสนาม',
     nameEn: 'Field Officer',
-    dailyScans: 3,
+    dailyScans: 10,
     unlocks: [],
   },
   {
